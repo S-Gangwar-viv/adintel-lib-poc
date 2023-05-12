@@ -40,9 +40,36 @@ export const Drawer = (props: IDrawerProps) => {
   const [activeMenuInfo, setActiveMenuInfo] = useState<any>(null);
   const drawerRef: React.RefObject<HTMLDivElement> = useRef(null);
   const [activeId, setActiveId] = useState<any>(null);
+  const [menus, setMenus] = useState<any>([]);
+  const [activeMenuID, setActiveMenuID] = useState<string | null>(null);
 
   const path = window.location.hash.split("?auth");
   const currentPath = path && path[0].replace('#/', '');
+
+  useEffect(() => {
+    var newMenus: any = [];
+    menuItems && menuItems.map((item: any, index: number) => {
+      var itemArr: any = [];
+      item.submenus.map((obj: any, ind: number) => {
+        itemArr.push({
+          'icon': obj.icon,
+          'key': obj.key,
+          'label': obj.label,
+          'submenus': obj.submenus,
+          'value': `${item.label}-${obj.value+index+ind}`
+        });
+      })
+      newMenus.push({
+        'icon': item.icon,
+        'key': item.key,
+        'label': item.label,
+        'submenus': itemArr,
+        'value': `${item.label}-${item.value+index}`
+      })
+    });
+    setMenus(newMenus);
+    setActiveId(localStorage.getItem('currentKey')||null);
+  }, [menuItems]);
 
   useEffect(() => {
     document.addEventListener('mousedown', onOutSideClick);
@@ -102,6 +129,8 @@ export const Drawer = (props: IDrawerProps) => {
   };
 
   const setActiveSubMenu = (e: any, obj: any): void => {
+    localStorage.setItem('currentKey',obj.value)
+    setActiveMenuID(obj.value);
     onSubMenuClick && onSubMenuClick(obj.key);
     setShowSubMenu(false);
     e.preventDefault();
@@ -134,7 +163,7 @@ export const Drawer = (props: IDrawerProps) => {
 
   const selectDefaultMenu = (obj: any) => {
     var cls = '';
-    var tmp = obj.submenus.filter((item: any) => {
+    var tmp = obj && obj.submenus && obj.submenus.filter((item: any) => {
       var key;
       key = item && item.key && item.key.replace('-', '')
       if (item && item.key && item.key.endsWith(currentPath)) {
@@ -153,13 +182,25 @@ export const Drawer = (props: IDrawerProps) => {
       }
     });
 
-    if (tmp.length > 0) {
+    if (tmp && tmp.length > 0) {
       return `${cls} menu-selected`
     }
     return `${cls} `
   }
 
- 
+  const selectDefaultMenuByValue = (obj: any) => {
+    var cls = '';
+    var tmp = obj && obj.submenus && obj.submenus.filter((item: any) => {
+      if (activeMenuID === item.value) {
+        return item
+      }
+    });
+    if (tmp && tmp.length > 0) {
+      return `${cls} menu-selected`
+    }
+    return `${cls} `
+  }
+
 
   const getActivemenu = (obj: string) => {
     var cls = '';
@@ -178,11 +219,11 @@ export const Drawer = (props: IDrawerProps) => {
     <>
       <div className={`drawer ${customClass ? customClass : ''}`}>
         <div className={`drawer-menu ${subMenuAct === 'click' ? 'drawer-menu-hover' : ''}`} id='menubar' ref={drawerRef}>
-          {menuItems.map((menuItem: IMenuItem) => (
+          {menus.map((menuItem: IMenuItem) => (
             <div
               key={`menu-item-${menuItem.key}`}
               data-test-id={`menu-item-${menuItem.key}`}
-              className={`drawer-menu-item  ${selectDefaultMenu(menuItem)} ${getActivemenu(menuItem.key)} `}
+              className={`drawer-menu-item  ${selectDefaultMenu(menuItem)} ${getActivemenu(menuItem.key)} ${selectDefaultMenuByValue(menuItem)} `}
               onMouseOver={() => {
                 showSubMenus(menuItem);
                 setActiveId(menuItem.key);
@@ -212,7 +253,7 @@ export const Drawer = (props: IDrawerProps) => {
                 <React.Fragment key={`label-${subMenu.key}`}>
                   <a
                     data-test-id={subMenu.label}
-                    className={`drawer-submenu-item ${setCurrentKeySelected(subMenu.key)} `}
+                    className={`drawer-submenu-item ${setCurrentKeySelected(subMenu.key)} ${activeMenuID === subMenu.value ? 'submenu-active':''}`}
                     onClick={(e: any) => setActiveSubMenu(e, subMenu)}
                     key={`label-${subMenu.key}`}
                     href={`${getOrigin()}#/${subMenu.key}`}
