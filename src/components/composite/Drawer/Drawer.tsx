@@ -42,7 +42,8 @@ export const Drawer = (props: IDrawerProps) => {
   const [activeId, setActiveId] = useState<any>(null);
   const [menus, setMenus] = useState<any>([]);
   const [activeMenuID, setActiveMenuID] = useState<string | null>(null);
-
+  
+ 
   const hashPath = window.location.hash;
   if(hashPath.includes("?auth")){
     var path = hashPath.split("?auth");
@@ -73,7 +74,7 @@ export const Drawer = (props: IDrawerProps) => {
       })
     });
     setMenus(newMenus);
-    setActiveId(localStorage.getItem('currentKey')||null);
+    //setActiveId( JSON.parse(localStorage.getItem('currentKey') || '{}'));
   }, [menuItems]);
 
   useEffect(() => {
@@ -88,6 +89,15 @@ export const Drawer = (props: IDrawerProps) => {
     document.addEventListener('onmouseleave', onOutSideHover);
   }, []);
 
+  // useEffect(() => {
+  //   const data = window.localStorage.getItem('currentKey');
+  //   if ( data !== null ) setActiveMenuID(JSON.parse(data));
+  // }, []);
+
+  // useEffect(() => {
+  //   window.localStorage.setItem('currentKey', JSON.stringify(activeMenuID));
+  // }, [activeMenuID]);
+ 
 
   const getOrigin = () => {
     const address = location.origin + location.pathname + (location.pathname.endsWith('/') ? '' : '/')
@@ -134,7 +144,7 @@ export const Drawer = (props: IDrawerProps) => {
   };
 
   const setActiveSubMenu = (e: any, obj: any): void => {
-    localStorage.setItem('currentKey',obj.value)
+    // localStorage.setItem("currentKey", JSON.stringify(obj.value));
     setActiveMenuID(obj.value);
     onSubMenuClick && onSubMenuClick(obj.key);
     setShowSubMenu(false);
