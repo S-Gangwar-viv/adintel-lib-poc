@@ -1,4 +1,5 @@
 {
+  
   "version": "0.3.43",
   "license": "MIT",
   "main": "dist/index.js",
